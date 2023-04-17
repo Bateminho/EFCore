@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace ConsoleApp.db.Entities
 	{
 		public int MealId { get; set; }
 		public string MealName { get; set; }
+		
 		public MealType Type { get; set; }
 
 		// Navigation properties
@@ -22,8 +24,11 @@ namespace ConsoleApp.db.Entities
 
 	public enum MealType
 	{
+		[Display (Name = "Warm Dish")]
 		WarmDish,
+		[Display (Name = "Street Food")]
 		StreetFood,
+		[Display (Name = "Just In Time")]
 		JustInTime
 	}
 }

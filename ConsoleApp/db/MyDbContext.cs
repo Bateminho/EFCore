@@ -18,6 +18,7 @@ namespace ConsoleApp.db
 		public DbSet<Meal> Meals { get; set; }
         public DbSet<Canteen> Canteens { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
+		public DbSet<ReservationList> ReservationLists { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Rating> Ratings { get; set; }
 

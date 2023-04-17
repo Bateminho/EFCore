@@ -13,6 +13,7 @@ namespace ConsoleApp.db.Entities
 		public int ReservationId { get; set; }
 		
 		public Reservation Reservation { get; set; }
+		
 		[Key]
 		public int MealId { get; set; }
 		public Meal Meal { get; set; }

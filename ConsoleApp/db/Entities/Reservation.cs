@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,9 @@ namespace ConsoleApp.db.Entities
 
     public enum ReservationStatus
     {
-	    Reserved,
-	    Canceled
+        [Display(Name = "Reserved")]
+        Reserved,
+        [Display(Name = "Cancelled")]
+	    Cancelled
     }
 }
