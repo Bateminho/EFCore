@@ -1,7 +1,4 @@
-﻿//using ConsoleApp.db;
-//using System;
-
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using ConsoleApp.Models;
 using ConsoleApp.Repo;
 using DnsClient;
@@ -174,50 +171,27 @@ foreach (var name in canteenNames)
     Console.WriteLine($"{name}: {canteenAvgRatings[name]:F2}");
 }
 
+Console.WriteLine("\n\n--------------------------------------------");
+Console.WriteLine("Query 7: Show payroll for staff\n");
 
-
-
-//var canteenRatings = canteens
+//var canteenName = "Kgl. Bibliotek";
+//var staff = db.Staffs
 //    .Aggregate()
-//    .Lookup("Ratings", "_id", "CanteenId", "Ratings")
-//    .Project(c => new
+//    .Match(s => s.Canteen.CanteenName == canteenName)
+//    .Group(s => s.CanteenId, g => new
 //    {
-//        Name = c.CanteenName,
-//        AvgRating = c.Ratings.Any() ? c.Ratings.Average(r => r.RatingValue) : 0
+//        CanteenId = g.Key,
+//        Payroll = g.Sum(s => double.Parse(s.Salary))
 //    })
-//    .SortByDescending(c => c.AvgRating)
-//    .ToList();
+//    .Lookup<Canteen, ObjectId, Canteen>(
+//        db.Canteens,
+//        p => p.CanteenId,
+//        c => c.Id,
+//        (p, c) => new { Canteen = c, Payroll = p.Payroll }
+//    )
+//    .First();
 
-//Console.WriteLine("\n ------------------------------------------");
-//Console.WriteLine("Canteen Ratings:");
-//Console.WriteLine("Name\t\t\tAvg Rating");
-
-//foreach (var canteen in canteenRatings)
-//{
-//    Console.WriteLine($"{canteen.Name}\t\t\t{canteen.AvgRating}");
-//}
-
-
-
-// 6. Query
-//var canteenRatings2 = canteens.GetAll()
-//    .Select(c => new
-//    {
-//        Name = c.CanteenName,
-//        AvgRating = ratings.GetAverageRatingByCanteenId(c.Id)
-//    })
-//    .OrderByDescending(c => c.AvgRating)
-//    .ToList();
-
-//Console.WriteLine("\n ------------------------------------------");
-//Console.WriteLine("Canteen Ratings:");
-//Console.WriteLine("Name\t\t\t\t\tAvg Rating");
-
-//foreach (var rating in canteenRatings)
-//{
-//    Console.WriteLine($"{rating.Name}\t\t\t\t{rating.AvgRating}");
-//}
-
+//Console.WriteLine($"Payroll for {staff.Canteen.CanteenName}: {staff.Payroll}");
 
 
 
