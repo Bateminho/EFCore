@@ -95,13 +95,14 @@ string canteenNameQ4 = "Kgl. Bibliotek";
 Canteen canteenQ4 = canteens.FindCanteenByName(canteenNameQ4);
 var mealTypes = meals.FindForCanteen(canteenQ4.Id)
     .GroupBy(m => m.Type)
-    .Select(g => g.Key)
-    .Distinct();
+    .Select(g => new { Type = g.Key, MealNames = g.Select(m => m.MealName).ToList() })
+    .ToList();
 
-Console.WriteLine($"Meal types available at {canteenName} canteen:");
-foreach (MealType mealType in mealTypes)
+Console.WriteLine($"Meal types available at {canteenNameQ4} canteen:");
+foreach (var mealType in mealTypes)
 {
-    Console.WriteLine(mealType);
+    //Console.WriteLine($"Type: {mealType.Type}");
+    Console.WriteLine($"Meal names: {string.Join(", ", mealType.MealNames)}");
 }
 
 //// Query 5 or a canteen given as input, show the the available (canceled) -------------------------------------------------------------------
