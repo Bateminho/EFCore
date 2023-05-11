@@ -30,102 +30,96 @@ StaffRepository staffs = new StaffRepository();
 SeedDb();
 
 
-////Query 1
-//Console.WriteLine("\n\n--------------------------------------------");
-//Console.WriteLine("Query 1: Find meals by canteen name\n");
-//Canteen canteen = canteens.FindCanteenByName("Kgl. Bibliotek");
-//List<Meal> mealsForCanteen = meals.FindForCanteen(canteen.Id)
-//    .Select(meals => new Meal() { MealName = meals.MealName, Type = meals.Type })
-//    .ToList();
-//foreach (Meal meal in mealsForCanteen)
-//{
-//    Console.WriteLine($"Meal Name: {meal.MealName}, Type: {meal.Type}");
-//}
+//Query 1 Get the days menu options for a canteen  --------------------------------------------------------------------------------
+Console.WriteLine("\n\n--------------------------------------------");
+Console.WriteLine("Query 1: Find meals by canteen name\n");
+Canteen canteenq1 = canteens.FindCanteenByName("Kgl. Bibliotek");
+List<Meal> mealsForCanteen = meals.FindForCanteen(canteenq1.Id)
+    .Select(meals => new Meal() { MealName = meals.MealName, Type = meals.Type })
+    .ToList();
+foreach (Meal meal in mealsForCanteen)
+{
+    Console.WriteLine($"Meal Name: {meal.MealName}, Type: {meal.Type}");
+}
 
-////Query 2
-//Console.WriteLine("\n\n--------------------------------------------");
-//Console.WriteLine("Query 2: Find meals by canteen name\n");
+//Query 2 Get the reservation for given user  ---------------------------------------------------------------------------
+Console.WriteLine("\n\n--------------------------------------------");
+Console.WriteLine("Query 2: Find reservation for a customer\n");
+
+var customer = customers.FindCustomerByAuId("au030300");
+
+var reservationsForCustomer = reservations.GetReservationsByCustomerId(customer.Id).ToList();
+
+var mealsForCustomer = (from reservationList in reservationLists.GetAll()
+                        join reservation in reservationsForCustomer on reservationList.ReservationId equals reservation.Id
+                        join meal in meals.GetAll() on reservationList.MealId equals meal.Id
+                        join canteen2 in canteens.GetAll() on meal.CanteenId equals canteen2.Id
+                        select new { MealId = meal.Id, MealName = meal.MealName, CanteenName = canteen2.CanteenName }).ToList();
+
+foreach (var meal in mealsForCustomer)
+{
+    Console.WriteLine($"Meal ID: {meal.MealId} Name: {meal.MealName} Canteen: {meal.CanteenName}");
+}
+
+//Query 3 For a canteen given as input, show the number of reservations ---------------------------------------------------------------------
+
+Console.WriteLine("\n\n--------------------------------------------");
+Console.WriteLine("Query 3: Show the number of reservations for a canteen\n");
+
+string canteenName = "Kgl. Bibliotek";
+
+var reservations2 = from reservation in reservations.GetAll()
+                    join reservationList in reservationLists.GetAll() on reservation.Id equals reservationList.ReservationId
+                    join meal in meals.GetAll() on reservationList.MealId equals meal.Id
+                    join canteen in canteens.GetAll() on meal.CanteenId equals canteen.Id
+                    where canteen.CanteenName == canteenName
+                    group reservation by meal.MealName into g
+                    select new
+                    {
+                        MealName = g.Key,
+                        ReservationCount = g.Count()
+                    };
+
+Console.WriteLine($"The number of reservations for each meal at {canteenName} canteen:");
+foreach (var reservation in reservations2)
+{
+    Console.WriteLine($"{reservation.MealName}: {reservation.ReservationCount}");
+}
+//Query 4 For a canteen given as input, show the just-in-time meal options --------------------------------------------------------------------
+
+Console.WriteLine("\n\n--------------------------------------------");
+Console.WriteLine("Query 4: Show cancelled meals from other canteens\n");
 
 
+string canteenNameQ4 = "Kgl. Bibliotek";
+Canteen canteenQ4 = canteens.FindCanteenByName(canteenNameQ4);
+var mealTypes = meals.FindForCanteen(canteenQ4.Id)
+    .GroupBy(m => m.Type)
+    .Select(g => g.Key)
+    .Distinct();
 
+Console.WriteLine($"Meal types available at {canteenName} canteen:");
+foreach (MealType mealType in mealTypes)
+{
+    Console.WriteLine(mealType);
+}
 
-//var customer = customers.FindCustomerByAuId("au030300");
-
-//var reservationsForCustomer = reservations.GetReservationsByCustomerId(customer.Id).ToList();
-
-//var mealsForCustomer = (from reservationList in reservationLists.GetAll()
-//    join reservation in reservationsForCustomer on reservationList.ReservationId equals reservation.Id
-//    join meal in meals.GetAll() on reservationList.MealId equals meal.Id
-//    join canteen2 in canteens.GetAll() on meal.CanteenId equals canteen2.Id
-//    select new { MealId = meal.Id, MealName = meal.MealName, CanteenName = canteen2.CanteenName }).ToList();
-
-//foreach (var meal in mealsForCustomer)
-//{
-//    Console.WriteLine($"Meal ID: {meal.MealId} Name: {meal.MealName} Canteen: {meal.CanteenName}");
-//}
-
-//Console.WriteLine("\n\n--------------------------------------------");
-//Console.WriteLine($"Query 3: Find meals by customerAuId ({customer.CustomerAuId})\n");
-
-//foreach (var meal in mealsForCustomer)
-//{
-//    Console.WriteLine($"Meal ID: {meal.MealId}, Meal Name: {meal.MealName}, Canteen Name: {meal.CanteenName}");
-//}
-
-//Console.WriteLine("\n\n--------------------------------------------");
-//Console.WriteLine("Query 3: Show the number of reservations for a canteen\n");
-
-//string canteenName = "Kgl. Bibliotek";
-
-//var reservations2 = from reservation in reservations.GetAll()
-//    join reservationList in reservationLists.GetAll() on reservation.Id equals reservationList.ReservationId
-//    join meal in meals.GetAll() on reservationList.MealId equals meal.Id
-//    join canteen in canteens.GetAll() on meal.CanteenId equals canteen.Id
-//    where canteen.CanteenName == canteenName
-//    group reservation by meal.MealName into g
-//    select new
-//    {
-//        MealName = g.Key,
-//        ReservationCount = g.Count()
-//    };
-
-//Console.WriteLine($"The number of reservations for each meal at {canteenName} canteen:");
-//foreach (var reservation in reservations2)
-//{
-//    Console.WriteLine($"{reservation.MealName}: {reservation.ReservationCount}");
-//}
-
-//Console.WriteLine("\n\n--------------------------------------------");
-//Console.WriteLine("Query 4: Show the number of reservations for a canteen\n");
-
-//// Query 1: Find all MealTypes for a given canteen
-//string canteenName = "Kgl. Bibliotek";
-//Canteen canteen = canteens.FindCanteenByName(canteenName);
-//var mealTypes = meals.FindForCanteen(canteen.Id)
-//    .GroupBy(m => m.Type)
-//    .Select(g => g.Key)
-//    .Distinct();
-
-//Console.WriteLine($"Meal types available at {canteenName} canteen:");
-//foreach (MealType mealType in mealTypes)
-//{
-//    Console.WriteLine(mealType);
-//}
+//// Query 5 or a canteen given as input, show the the available (canceled) -------------------------------------------------------------------
 
 //Console.WriteLine("\n\n--------------------------------------------");
 //Console.WriteLine("Query 5: Show the available (cancelled) meals for nearby canteens\n");
 
 //string inputCanteenName = "Kgl. Bibliotek"; // replace with actual input canteen name
 
-//var canteen = canteens.GetAll().FirstOrDefault(c => c.CanteenName == inputCanteenName);
-//if (canteen == null)
+//var canteenQ5 = canteens.GetAll().FirstOrDefault(c => c.CanteenName == inputCanteenName);
+//if (canteenQ5 == null)
 //{
 //    Console.WriteLine($"Canteen {inputCanteenName} not found");
 //    return;
 //}
 
 //// find nearby canteens based on the zip code of the input canteen
-//var nearbyCanteens = canteens.GetAllExcept(inputCanteenName).Where(c => c.ZipCode == canteen.ZipCode).ToList();
+//var nearbyCanteens = canteens.GetAllExcept(inputCanteenName).Where(c => c.ZipCode == canteenQ5.ZipCode).ToList();
 //if (nearbyCanteens.Count == 0)
 //{
 //    Console.WriteLine($"No nearby canteens found for {inputCanteenName}");
@@ -147,42 +141,43 @@ SeedDb();
 //    foreach (var reservationList in reservation.ReservationLists)
 //    {
 //        var meal = reservationList.Meal;
-//        var canteenName = meal.Canteen.CanteenName;
-//        var isNearbyCanteen = nearbyCanteens.Any(c => c.CanteenName == canteenName);
-//        if (isNearbyCanteen && canteenName != inputCanteenName)
+//        var canteenNameQ6 = meal.Canteen.CanteenName;
+//        var isNearbyCanteen = nearbyCanteens.Any(c => c.CanteenName == canteenNameQ6);
+//        if (isNearbyCanteen && canteenNameQ6 != inputCanteenName)
 //        {
-//            Console.WriteLine($"Canteen Name: {canteenName}, " +
+//            Console.WriteLine($"Canteen Name: {canteenNameQ5}, " +
 //                              $"Zip Code: {meal.Canteen.ZipCode}, " +
 //                              $"Meal Name: {meal.MealName}");
 //        }
 //    }
 //}
 
+////Query 6 -----------------------------------------------------------------------------------------------------------------------
 Console.WriteLine("\n\n--------------------------------------------");
 Console.WriteLine("Query 6: Show average rating of all canteens\n");
 
-//var canteenRepo = new CanteenRepository();
+var canteenRepo = new CanteenRepository();
 
-//var canteenNames = canteenRepo.GetAllCanteenNames();
-//var canteenAvgRatings = canteenRepo.GetCanteensAverageRatings();
+var canteenNames = canteenRepo.GetAllCanteenNames();
+var canteenAvgRatings = canteenRepo.GetCanteensAverageRatings();
 
-//foreach (var name in canteenNames)
-//{
-//    Console.WriteLine($"{name}: {canteenAvgRatings[name]:F2}");
-//}
+foreach (var name in canteenNames)
+{
+    Console.WriteLine($"{name}: {canteenAvgRatings[name]:F2}");
+}
 
 Console.WriteLine("\n\n--------------------------------------------");
 Console.WriteLine("Query 7: Show payroll for staff\n");
 
-Canteen canteen = canteens.FindCanteenByName("Kgl. Bibliotek");
+Canteen canteenQ7 = canteens.FindCanteenByName("Kgl. Bibliotek");
 
 // Query 7: Get the payroll of all staff working in a canteen by canteen name
-var canteenName = "Kgl. Bibliotek";
-var payroll = canteens.GetStaffPayrollByCanteenName(canteenName);
+var canteenNameQ7 = "Kgl. Bibliotek";
+var payroll = canteens.GetStaffPayrollByCanteenName(canteenNameQ7);
 
 if (payroll.Any())
 {
-    Console.WriteLine($"\nPayroll of staff working in {canteenName}:");
+    Console.WriteLine($"\nPayroll of staff working in {canteenNameQ7}:");
     Console.WriteLine("-------------------------------------");
     foreach (var (staffName, salary) in payroll)
     {
@@ -191,7 +186,7 @@ if (payroll.Any())
 }
 else
 {
-    Console.WriteLine($"No staff found working in {canteenName}.");
+    Console.WriteLine($"No staff found working in {canteenNameQ7}.");
 }
 
 
@@ -313,7 +308,7 @@ void SeedDb()
     meals.AddNewMeal("Tacos", MealType.WarmDish, canteen1.Id);
     meals.AddNewMeal("Pizza", MealType.StreetFood, canteen2.Id);
     meals.AddNewMeal("Indian Curry", MealType.WarmDish, canteen1.Id);
-    meals.AddNewMeal("Burger", MealType.StreetFood, canteen2.Id);
+    meals.AddNewMeal("Burger", MealType.StreetFood, canteen3.Id);
     Console.WriteLine("Finished creating meals");
 
 
