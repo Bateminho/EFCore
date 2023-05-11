@@ -18,7 +18,6 @@ namespace ConsoleApp.Repo
             return result;
         }
 
-
         public Staff? FindStaffById(ObjectId id)
         {
             return Collection.Find(Builders<Staff>.Filter.Eq(staff => staff.Id, id)).FirstOrDefault();
@@ -53,7 +52,12 @@ namespace ConsoleApp.Repo
 
         public bool UpdateStaff(Staff staff)
         {
-            var result = Collection.ReplaceOne(Builders<Staff>.Filter.Eq(s => s.Id, staff.Id), staff);
+            var filter = Builders<Staff>.Filter.Eq(s => s.Id, staff.Id);
+            var update = Builders<Staff>.Update
+                .Set(s => s.Name, staff.Name)
+                .Set(s => s.Title, staff.Title)
+                .Set(s => s.Salary, staff.Salary);
+            var result = Collection.UpdateOne(filter, update);
             return result.ModifiedCount > 0;
         }
         public void DeleteAll()

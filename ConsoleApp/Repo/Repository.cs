@@ -19,7 +19,6 @@ namespace ConsoleApp.Repo
         public Repository()
         {
             var database = GetDatabase();
-            Collection = GetCollection(database);
             Collection = database.GetCollection<TEntity>(typeof(TEntity).Name);
         }
 

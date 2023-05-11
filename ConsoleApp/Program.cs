@@ -161,39 +161,38 @@ SeedDb();
 Console.WriteLine("\n\n--------------------------------------------");
 Console.WriteLine("Query 6: Show average rating of all canteens\n");
 
-var canteenRepo = new CanteenRepository();
+//var canteenRepo = new CanteenRepository();
 
-var canteenNames = canteenRepo.GetAllCanteenNames();
-var canteenAvgRatings = canteenRepo.GetCanteensAverageRatings();
+//var canteenNames = canteenRepo.GetAllCanteenNames();
+//var canteenAvgRatings = canteenRepo.GetCanteensAverageRatings();
 
-foreach (var name in canteenNames)
-{
-    Console.WriteLine($"{name}: {canteenAvgRatings[name]:F2}");
-}
+//foreach (var name in canteenNames)
+//{
+//    Console.WriteLine($"{name}: {canteenAvgRatings[name]:F2}");
+//}
 
 Console.WriteLine("\n\n--------------------------------------------");
 Console.WriteLine("Query 7: Show payroll for staff\n");
 
-//var canteenName = "Kgl. Bibliotek";
-//var staff = db.Staffs
-//    .Aggregate()
-//    .Match(s => s.Canteen.CanteenName == canteenName)
-//    .Group(s => s.CanteenId, g => new
-//    {
-//        CanteenId = g.Key,
-//        Payroll = g.Sum(s => double.Parse(s.Salary))
-//    })
-//    .Lookup<Canteen, ObjectId, Canteen>(
-//        db.Canteens,
-//        p => p.CanteenId,
-//        c => c.Id,
-//        (p, c) => new { Canteen = c, Payroll = p.Payroll }
-//    )
-//    .First();
+Canteen canteen = canteens.FindCanteenByName("Kgl. Bibliotek");
 
-//Console.WriteLine($"Payroll for {staff.Canteen.CanteenName}: {staff.Payroll}");
+// Query 7: Get the payroll of all staff working in a canteen by canteen name
+var canteenName = "Kgl. Bibliotek";
+var payroll = canteens.GetStaffPayrollByCanteenName(canteenName);
 
-
+if (payroll.Any())
+{
+    Console.WriteLine($"\nPayroll of staff working in {canteenName}:");
+    Console.WriteLine("-------------------------------------");
+    foreach (var (staffName, salary) in payroll)
+    {
+        Console.WriteLine($"{staffName}: {salary}");
+    }
+}
+else
+{
+    Console.WriteLine($"No staff found working in {canteenName}.");
+}
 
 
 
@@ -243,11 +242,49 @@ void SeedDb()
 
     // Create Staff
     Console.WriteLine("Creating staff");
-    staffs.AddNewStaff("Jens B.", "Cook", "30700", canteen1);
-    staffs.AddNewStaff("Mette C.", "Waiter", "29000", canteen1);
-    staffs.AddNewStaff("Mads D.", "Waiter", "29000", canteen1);
-    staffs.AddNewStaff("Lucile E.", "Cook", "30700", canteen1);
+    
+    var staff1 = new Staff
+    {
+        Name = "Jens B.",
+        Title = "Cook",
+        Salary = "30700",
+        Canteen = canteen1
+    };
+    staffs.Insert(staff1);
+    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff1);
+
+    var staff2 = new Staff
+    {
+        Name = "Mette C.",
+        Title = "Waiter",
+        Salary = "29000",
+        Canteen = canteen1
+    };
+    staffs.Insert(staff2);
+    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff2);
+
+    var staff3 = new Staff
+    {
+        Name = "Mads D. ",
+        Title = "Waiter",
+        Salary = "29000",
+        Canteen = canteen1
+    };
+    staffs.Insert(staff3);
+    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff3);
+
+    var staff4 = new Staff
+    {
+        Name = "Lucile E.",
+        Title = "Cook",
+        Salary = "30700",
+        Canteen = canteen1
+    };
+    staffs.Insert(staff4);
+    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff4);
+
     Console.WriteLine("Finished creating staff");
+
 
 
     // Create Customers
