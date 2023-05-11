@@ -1,411 +1,472 @@
-﻿using ConsoleApp;
-using ConsoleApp.db;
-using ConsoleApp.db.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Security.Cryptography;
-using ConsoleApp.Migrations;
-using System;
+﻿//using ConsoleApp.db;
+//using System;
 
-using (var db = new MyDbContext())
+using System.Collections.ObjectModel;
+using ConsoleApp.Models;
+using ConsoleApp.Repo;
+using DnsClient;
+using Microsoft.VisualBasic;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+CanteenRepository canteens = new CanteenRepository();
+CustomerRepository customers = new CustomerRepository();
+MealRepository meals = new MealRepository();
+ReservationRepository reservations = new ReservationRepository();
+ReservationListRepository reservationLists = new ReservationListRepository();
+RatingRepository ratings = new RatingRepository(canteens);
+StaffRepository staffs = new StaffRepository();
+
+//// Delete all collections if they exist
+//if (canteens.GetAll().Any() || customers.GetAll().Any() || meals.GetAll().Any() ||
+//    reservations.GetAll().Any() || reservationLists.GetAll().Any() || staffs.GetAll().Any())
 {
-	
-	ClearData(db);
-//	SeedDb(db);
+    // Delete existing data
+    canteens.DeleteAll();
+    customers.DeleteAll();
+    meals.DeleteAll();
+    reservations.DeleteAll();
+    reservationLists.DeleteAll();
+    staffs.DeleteAll();
+}
 
-//	// 1. Query
+SeedDb();
 
-//	var canteenName = "Kgl. Bibliotek";
 
-//	var menuOptions = from meal in db.Meals
-//					  join canteen in db.Canteens on meal.CanteenId equals canteen.CanteenId
-//					  where canteen.CanteenName == canteenName
-//					  select new { meal.MealName, meal.Type };
-//	Console.Write("\n ------------------------------------------");
-//	Console.Write($"\n\nInput to used for query: {canteenName}");
-//	Console.WriteLine("\nThe day's menu options for {0} are:", canteenName);
-//	foreach (var option in menuOptions)
-//	{
-//		Console.WriteLine("Meal Name: {0}, Meal Type: {1}", option.MealName, option.Type);
-//	}
+////Query 1
+//Console.WriteLine("\n\n--------------------------------------------");
+//Console.WriteLine("Query 1: Find meals by canteen name\n");
+//Canteen canteen = canteens.FindCanteenByName("Kgl. Bibliotek");
+//List<Meal> mealsForCanteen = meals.FindForCanteen(canteen.Id)
+//    .Select(meals => new Meal() { MealName = meals.MealName, Type = meals.Type })
+//    .ToList();
+//foreach (Meal meal in mealsForCanteen)
+//{
+//    Console.WriteLine($"Meal Name: {meal.MealName}, Type: {meal.Type}");
+//}
 
-//	// 2. Query
-
-//	var customerCpr = "010120-4006";
-//	var reservationList = (from r in db.ReservationLists
-//						   join re in db.Reservations on r.ReservationId equals re.ReservationId
-//						   join m in db.Meals on r.MealId equals m.MealId
-//						   join c in db.Canteens on m.CanteenId equals c.CanteenId
-//						   join cus in db.Customers on re.CustomerId equals cus.CustomerId
-//						   where cus.CustomerCPR == customerCpr
-//						   select r)
-//		.FirstOrDefault();
-
-//	if (reservationList != null)
-//	{
-//		Console.Write("\n ------------------------------------------");
-//		Console.Write($"\n\nInput to used for query: {customerCpr}");
-//		Console.WriteLine($"\nMealId: {reservationList.MealId}, MealName: {reservationList.Meal.MealName}, CanteenName: {reservationList.Meal.Canteen.CanteenName}");
-//	}
-//	else
-//	{
-//		Console.WriteLine("No reservation found for the specified customer.");
-//	}
-
-//	// 3. Query
-
-//	var canteenName2 = "Kgl. Bibliotek";
-
-//	var reservations = from reservation in db.Reservations
-//					   join meal in db.Meals on reservationList.MealId equals meal.MealId
-//					   join canteen in db.Canteens on meal.CanteenId equals canteen.CanteenId
-//					   where canteen.CanteenName == canteenName2
-//					   group reservation by meal.MealName into g
-//					   select new
-//					   {
-//						   Name = g.Key,
-//						   Amount = g.Count()
-//					   };
-
-//	Console.Write("\n ------------------------------------------");
-//	Console.Write($"\n\nInput used for query: {canteenName2}");
-//	Console.WriteLine("\nThe number of reservations for each daily menu option at {0} are:", canteenName2);
-
-//	foreach (var reservation in reservations)
-//	{
-//		Console.WriteLine("{0}\t{1}", reservation.Name, reservation.Amount);
-//	}
-
-//	// 4. Query
-//	string canteenName3 = "Kgl. Bibliotek";
-
-//	var jitMeals = db.Meals
-//		.Where(m => m.Canteen.CanteenName == canteenName3 && m.Type == MealType.JustInTime && !m.ReservationLists.Any(resList => db.Reservations.Any(res => res.ReservationId == resList.ReservationId && res.Status == ReservationStatus.Cancelled)))
-//		.Select(m => m.MealName);
-
-//	var cancelledMeals = db.Meals
-//		.Where(m => m.Canteen.CanteenName == canteenName3 && m.ReservationLists.Any(resList => db.Reservations.Any(res => res.ReservationId == resList.ReservationId && res.Status == ReservationStatus.Cancelled)))
-//		.Select(m => m.MealName);
-
-//	Console.Write("\n ------------------------------------------");
-//	Console.Write($"\n\nInput used for query: {canteenName3}");
-//	Console.WriteLine("\nFor {0}:", canteenName3);
-//	Console.WriteLine($"Just-in-time meal options for {canteenName3}:");
-//	foreach (var mealName in jitMeals)
-//	{
-//		Console.WriteLine(mealName);
-//	}
-
-//	Console.WriteLine($"\nCancelled meal options for {canteenName3}:");
-//	foreach (var mealName in cancelledMeals)
-//	{
-//		Console.WriteLine(mealName);
-//	}
+////Query 2
+//Console.WriteLine("\n\n--------------------------------------------");
+//Console.WriteLine("Query 2: Find meals by canteen name\n");
 
 
 
-//	// 5. Query
-//	var inputCanteenName = "Kgl. Bibliotek"; // replace with actual input canteen name
-//	var cancelledReservations = db.Reservations
-//		.Where(r => r.Status == ReservationStatus.Cancelled)
-//		.Include(r => r.Canteen)
-//		.Include(r => r.ReservationLists).ThenInclude(rl => rl.Meal)
-//		.ToList();
-//	Console.Write("\n ------------------------------------------");
-//	Console.WriteLine("\nCancelled Reservations:");
-//	Console.WriteLine("Canteen Name\tAddress\tZip Code\tReservation Date\tMeal Name");
 
-//	foreach (var reservation in cancelledReservations)
-//	{
-//		if (reservation.Canteen.CanteenName == inputCanteenName)
-//		{
-//			// exclude the input canteen and include the other two canteens
-//			foreach (var otherCanteenReservation in cancelledReservations
-//				         .Where(r => r.Canteen.CanteenName != inputCanteenName))
-//			{
-//				Console.WriteLine($"{otherCanteenReservation.Canteen.CanteenName}\t{otherCanteenReservation.Canteen.Address}\t{otherCanteenReservation.Canteen.ZipCode}\t{otherCanteenReservation.Reservationtime:d}\t\t{otherCanteenReservation.ReservationLists.FirstOrDefault()?.Meal.MealName}");
-//			}
-//			break; // exit the loop after showing the other canteens
-//		}
-//		else
-//		{
-//			Console.WriteLine($"{reservation.Canteen.CanteenName}\t{reservation.Canteen.Address}\t{reservation.Canteen.ZipCode}\t{reservation.Reservationtime:d}\t\t{reservation.ReservationLists.FirstOrDefault()?.Meal.MealName}");
-//		}
-//	}
+//var customer = customers.FindCustomerByAuId("au030300");
 
-//	// 6. Query
-//	var canteenRatings = db.Canteens
-//		.Select(c => new
-//		{
-//			Name = c.CanteenName,
-//			AvgRating = c.AVGRating
-//		})
-//		.OrderByDescending(c => c.AvgRating);
-//	Console.Write("\n ------------------------------------------");
-//	Console.WriteLine("Canteen Ratings:");
-//	Console.WriteLine("Name\t\tAvg Rating");
+//var reservationsForCustomer = reservations.GetReservationsByCustomerId(customer.Id).ToList();
 
-	
+//var mealsForCustomer = (from reservationList in reservationLists.GetAll()
+//    join reservation in reservationsForCustomer on reservationList.ReservationId equals reservation.Id
+//    join meal in meals.GetAll() on reservationList.MealId equals meal.Id
+//    join canteen2 in canteens.GetAll() on meal.CanteenId equals canteen2.Id
+//    select new { MealId = meal.Id, MealName = meal.MealName, CanteenName = canteen2.CanteenName }).ToList();
+
+//foreach (var meal in mealsForCustomer)
+//{
+//    Console.WriteLine($"Meal ID: {meal.MealId} Name: {meal.MealName} Canteen: {meal.CanteenName}");
+//}
+
+//Console.WriteLine("\n\n--------------------------------------------");
+//Console.WriteLine($"Query 3: Find meals by customerAuId ({customer.CustomerAuId})\n");
+
+//foreach (var meal in mealsForCustomer)
+//{
+//    Console.WriteLine($"Meal ID: {meal.MealId}, Meal Name: {meal.MealName}, Canteen Name: {meal.CanteenName}");
+//}
+
+//Console.WriteLine("\n\n--------------------------------------------");
+//Console.WriteLine("Query 3: Show the number of reservations for a canteen\n");
+
+//string canteenName = "Kgl. Bibliotek";
+
+//var reservations2 = from reservation in reservations.GetAll()
+//    join reservationList in reservationLists.GetAll() on reservation.Id equals reservationList.ReservationId
+//    join meal in meals.GetAll() on reservationList.MealId equals meal.Id
+//    join canteen in canteens.GetAll() on meal.CanteenId equals canteen.Id
+//    where canteen.CanteenName == canteenName
+//    group reservation by meal.MealName into g
+//    select new
+//    {
+//        MealName = g.Key,
+//        ReservationCount = g.Count()
+//    };
+
+//Console.WriteLine($"The number of reservations for each meal at {canteenName} canteen:");
+//foreach (var reservation in reservations2)
+//{
+//    Console.WriteLine($"{reservation.MealName}: {reservation.ReservationCount}");
+//}
+
+//Console.WriteLine("\n\n--------------------------------------------");
+//Console.WriteLine("Query 4: Show the number of reservations for a canteen\n");
+
+//// Query 1: Find all MealTypes for a given canteen
+//string canteenName = "Kgl. Bibliotek";
+//Canteen canteen = canteens.FindCanteenByName(canteenName);
+//var mealTypes = meals.FindForCanteen(canteen.Id)
+//    .GroupBy(m => m.Type)
+//    .Select(g => g.Key)
+//    .Distinct();
+
+//Console.WriteLine($"Meal types available at {canteenName} canteen:");
+//foreach (MealType mealType in mealTypes)
+//{
+//    Console.WriteLine(mealType);
+//}
+
+//Console.WriteLine("\n\n--------------------------------------------");
+//Console.WriteLine("Query 5: Show the available (cancelled) meals for nearby canteens\n");
+
+//string inputCanteenName = "Kgl. Bibliotek"; // replace with actual input canteen name
+
+//var canteen = canteens.GetAll().FirstOrDefault(c => c.CanteenName == inputCanteenName);
+//if (canteen == null)
+//{
+//    Console.WriteLine($"Canteen {inputCanteenName} not found");
+//    return;
+//}
+
+//// find nearby canteens based on the zip code of the input canteen
+//var nearbyCanteens = canteens.GetAllExcept(inputCanteenName).Where(c => c.ZipCode == canteen.ZipCode).ToList();
+//if (nearbyCanteens.Count == 0)
+//{
+//    Console.WriteLine($"No nearby canteens found for {inputCanteenName}");
+//    return;
+//}
+
+//// find all cancelled reservations and include the meals and canteens
+//var cancelledReservations = reservations.GetAllCancelledReservations()
+//    .AsQueryable()
+//    .Include(r => r.ReservationLists)
+//    .ThenInclude(rl => rl.Meal)
+//    .ThenInclude(m => m.Canteen)
+//    .ToList();
+
+//// display the cancelled meals available at nearby canteens
+//Console.WriteLine($"Cancelled meals available at nearby canteens from {inputCanteenName}:");
+//foreach (var reservation in cancelledReservations)
+//{
+//    foreach (var reservationList in reservation.ReservationLists)
+//    {
+//        var meal = reservationList.Meal;
+//        var canteenName = meal.Canteen.CanteenName;
+//        var isNearbyCanteen = nearbyCanteens.Any(c => c.CanteenName == canteenName);
+//        if (isNearbyCanteen && canteenName != inputCanteenName)
+//        {
+//            Console.WriteLine($"Canteen Name: {canteenName}, " +
+//                              $"Zip Code: {meal.Canteen.ZipCode}, " +
+//                              $"Meal Name: {meal.MealName}");
+//        }
+//    }
+//}
+
+Console.WriteLine("\n\n--------------------------------------------");
+Console.WriteLine("Query 6: Show average rating of all canteens\n");
+
+var canteenRepo = new CanteenRepository();
+
+var canteenNames = canteenRepo.GetAllCanteenNames();
+var canteenAvgRatings = canteenRepo.GetCanteensAverageRatings();
+
+foreach (var name in canteenNames)
+{
+    Console.WriteLine($"{name}: {canteenAvgRatings[name]:F2}");
+}
+
+
+
+
+//var canteenRatings = canteens
+//    .Aggregate()
+//    .Lookup("Ratings", "_id", "CanteenId", "Ratings")
+//    .Project(c => new
+//    {
+//        Name = c.CanteenName,
+//        AvgRating = c.Ratings.Any() ? c.Ratings.Average(r => r.RatingValue) : 0
+//    })
+//    .SortByDescending(c => c.AvgRating)
+//    .ToList();
+
+//Console.WriteLine("\n ------------------------------------------");
+//Console.WriteLine("Canteen Ratings:");
+//Console.WriteLine("Name\t\t\tAvg Rating");
+
+//foreach (var canteen in canteenRatings)
+//{
+//    Console.WriteLine($"{canteen.Name}\t\t\t{canteen.AvgRating}");
 //}
 
 
-//void SeedDb(MyDbContext db)
+
+// 6. Query
+//var canteenRatings2 = canteens.GetAll()
+//    .Select(c => new
+//    {
+//        Name = c.CanteenName,
+//        AvgRating = ratings.GetAverageRatingByCanteenId(c.Id)
+//    })
+//    .OrderByDescending(c => c.AvgRating)
+//    .ToList();
+
+//Console.WriteLine("\n ------------------------------------------");
+//Console.WriteLine("Canteen Ratings:");
+//Console.WriteLine("Name\t\t\t\t\tAvg Rating");
+
+//foreach (var rating in canteenRatings)
 //{
-
-//	// Create Canteens
-//	if (!db.Canteens.Any())
-//	{
-		
-//		var canteens = new Canteen[]
-//		{
-//			new Canteen { CanteenName = "Kgl. Bibliotek", Address = "Nygade 6, Aarhus C", ZipCode = 8000, AVGRating = 4.2f}, 
-//			new Canteen { CanteenName = "Kemisk Canteen", Address = "Nørregade 10, Aarhus N", ZipCode = 8200 , AVGRating = 4.8f},
-//			new Canteen { CanteenName = "Matematisk Canteen", Address = "Silkeborgvej 20, Aarhus V", ZipCode = 8210, AVGRating = 3.8f}
-//		};
-
-//		foreach (Canteen canteen in canteens)
-//		{
-//			if (db.Canteens.Any(c => c.CanteenName == canteen.CanteenName))
-//			{
-//				Console.WriteLine($"Canteen {canteen.CanteenName} already exists in the database.");
-//				Console.WriteLine($"Existing canteen:");
-//				Console.WriteLine(db.Canteens.Single(c => c.CanteenName == canteen.CanteenName));
-//			}
-//			else
-//			{
-				
-//				db.Canteens.Add(canteen);
-//			}
-//		}
-
-//		db.SaveChanges();
-//	}
-
-//	// Create Customers
-//	if (!db.Customers.Any())
-//	{
-//		var customers = new List<Customer>
-//		{
-//			new Customer
-//			{
-//				CustomerCPR = "010120-4006", Name = "Josefine Jørgensen", Ratings = new List<Rating>{new Rating{RatingValue = 4, CanteenId = 0}},
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "020200-2006", Name = "Mette Andersen", Ratings = new List<Rating>{new Rating{RatingValue = 4, CanteenId = 2}},
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "030300-2007", Name = "Søren Nielsen", Ratings = new List<Rating>{new Rating{RatingValue = 3, CanteenId = 0}},
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "040400-2008", Name = "Karen Christensen", Ratings = new List<Rating>{ new Rating { RatingValue = 4, CanteenId = 1 } },
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "050500-2009", Name = "Peter Pedersen", Ratings = new List<Rating>{ new Rating { RatingValue = 3, CanteenId = 2 } },
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "060600-2010", Name = "Marianne Jensen", Ratings = new List<Rating>{ new Rating { RatingValue = 5, CanteenId = 0 } },
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "070700-2011", Name = "Jørgen Hansen", Ratings = new List<Rating>{ new Rating { RatingValue = 3, CanteenId = 0 } },
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "080800-2012", Name = "Gitte Madsen", Ratings = new List<Rating>{ new Rating { RatingValue = 2, CanteenId = 1 } },
-//				Reservations = new List<Reservation>()
-//			},
-//			new Customer
-//			{
-//				CustomerCPR = "090900-2013", Name = "Henrik Petersen", Ratings = new List<Rating>{ new Rating { RatingValue = 4, CanteenId = 2 } },
-//				Reservations = new List<Reservation>()
-//			},
-//		};
-
-//		db.Customers.AddRange(customers);
-//		db.SaveChanges();
-//	}
-
-
-//	if (!db.Meals.Any())
-//	{
-//		var canteens = db.Canteens.ToList();
-//		var meals = new List<Meal>
-//		{
-//			new Meal { MealName = "Green Curry", Type = MealType.WarmDish, CanteenId = canteens[0].CanteenId },
-//			new Meal { MealName = "Pizza", Type = MealType.StreetFood, CanteenId = canteens[0].CanteenId },
-//			new Meal { MealName = "JIT-Sandwich", Type = MealType.JustInTime, CanteenId = canteens[0].CanteenId },
-//			new Meal { MealName = "JIT-Soup", Type = MealType.JustInTime, CanteenId = canteens[0].CanteenId },
-//			new Meal { MealName = "Tacos", Type = MealType.WarmDish, CanteenId = canteens[2].CanteenId },
-//			new Meal { MealName = "Pizza", Type = MealType.StreetFood, CanteenId = canteens[0].CanteenId },
-//			new Meal { MealName = "Red Curry", Type = MealType.WarmDish, CanteenId = canteens[1].CanteenId },
-//			new Meal { MealName = "Pizza", Type = MealType.StreetFood, CanteenId = canteens[1].CanteenId },
-//			new Meal { MealName = "Indian Curry", Type = MealType.WarmDish, CanteenId = canteens[2].CanteenId },
-//			new Meal { MealName = "Burger", Type = MealType.StreetFood, CanteenId = canteens[2].CanteenId },
-//		};
-
-//		db.Meals.AddRange(meals);
-//		db.SaveChanges();
-//	}
-
-	
-
-//	// Create Ratings
-//	if (!db.Ratings.Any())
-//	{
-//		var customers = db.Customers.ToList();
-//		var canteens = db.Canteens.ToList();
-//		var ratings = new List<Rating>
-//		{
-//			new Rating { RatingValue = 4, CustomerId = customers[0].CustomerId, CanteenId = canteens[0].CanteenId },
-//			new Rating { RatingValue = 5, CustomerId = customers[0].CustomerId, CanteenId = canteens[2].CanteenId },
-//			new Rating { RatingValue = 3, CustomerId = customers[1].CustomerId, CanteenId = canteens[0].CanteenId },
-//			new Rating { RatingValue = 2, CustomerId = customers[2].CustomerId, CanteenId = canteens[2].CanteenId },
-//			new Rating { RatingValue = 1, CustomerId = customers[2].CustomerId, CanteenId = canteens[2].CanteenId },
-//			new Rating { RatingValue = 4, CustomerId = customers[3].CustomerId, CanteenId = canteens[1].CanteenId },
-//			new Rating { RatingValue = 5, CustomerId = customers[4].CustomerId, CanteenId = canteens[1].CanteenId },
-//			new Rating { RatingValue = 2, CustomerId = customers[5].CustomerId, CanteenId = canteens[0].CanteenId },
-//			new Rating { RatingValue = 3, CustomerId = customers[6].CustomerId, CanteenId = canteens[2].CanteenId },
-//			new Rating { RatingValue = 4, CustomerId = customers[7].CustomerId, CanteenId = canteens[2].CanteenId },
-//			new Rating { RatingValue = 1, CustomerId = customers[8].CustomerId, CanteenId = canteens[0].CanteenId }
-//		};
-//		db.Ratings.AddRange(ratings);
-//		db.SaveChanges();
-
-//		// Calculate average rating for each canteen and update AVGRating property
-//		foreach (var canteen in canteens)
-//		{
-//			var canteenRatings = db.Ratings.Where(r => r.CanteenId == canteen.CanteenId).ToList();
-//			if (canteenRatings.Any())
-//			{
-//				var avgRating = canteenRatings.Average(r => r.RatingValue);
-//				canteen.AVGRating = avgRating;
-//			}
-//		}
-
-//		db.SaveChanges();
-
-//	}
-
-//	if (!db.Reservations.Any())
-//	{
-//		var customers = db.Customers.ToList();
-//		var canteens = db.Canteens.ToList();
-
-//		var reservation1 = new Reservation
-//		{
-//			CustomerId = customers[0].CustomerId,
-//			CanteenId = canteens[0].CanteenId,
-//			Reservationtime = new DateTime(2023, 4, 18, 12, 0, 0),
-//			Status = ReservationStatus.Reserved
-//		};
-
-//		var reservation2 = new Reservation
-//		{
-//			CustomerId = customers[1].CustomerId,
-//			CanteenId = canteens[1].CanteenId,
-//			Reservationtime = new DateTime(2023, 4, 19, 13, 30, 0),
-//			Status = ReservationStatus.Cancelled
-//		};
-//		var reservation3 = new Reservation
-//		{
-//			CustomerId = customers[2].CustomerId,
-//			CanteenId = canteens[2].CanteenId,
-//			Reservationtime = new DateTime(2023, 4, 18, 12, 0, 0),
-//			Status = ReservationStatus.Reserved
-//		};
-
-//		var reservation4 = new Reservation
-//		{
-//			CustomerId = customers[3].CustomerId,
-//			CanteenId = canteens[2].CanteenId,
-//			Reservationtime = new DateTime(2023, 4, 19, 13, 30, 0),
-//			Status = ReservationStatus.Cancelled
-//		};
-//		var reservation5 = new Reservation
-//		{
-//			CustomerId = customers[4].CustomerId,
-//			CanteenId = canteens[0].CanteenId,
-//			Reservationtime = new DateTime(2023, 4, 18, 12, 0, 0),
-//			Status = ReservationStatus.Reserved
-//		};
-
-//		var reservation6 = new Reservation
-//		{
-//			CustomerId = customers[5].CustomerId,
-//			CanteenId = canteens[1].CanteenId,
-//			Reservationtime = new DateTime(2023, 4, 19, 13, 30, 0),
-//			Status = ReservationStatus.Cancelled
-//		};
-
-//		db.Reservations.AddRange(reservation1, reservation2, reservation3, reservation4, reservation5, reservation6);
-//		db.SaveChanges();
-//	}
-
-
-
-//	// Create ReservationLists
-//	if (!db.ReservationLists.Any())
-//	{
-//		try
-//		{
-//			var reservations = db.Reservations.ToList();
-//			var meals = db.Meals.ToList();
-
-//			var reservationLists = new List<ReservationList>
-//			{
-//				new ReservationList { ReservationId = reservations[0].ReservationId, MealId = meals[0].MealId },
-//				new ReservationList { ReservationId = reservations[1].ReservationId, MealId = meals[1].MealId },
-//				new ReservationList { ReservationId = reservations[2].ReservationId, MealId = meals[2].MealId },
-//				new ReservationList { ReservationId = reservations[3].ReservationId, MealId = meals[3].MealId },
-//				new ReservationList { ReservationId = reservations[4].ReservationId, MealId = meals[4].MealId },
-//				new ReservationList { ReservationId = reservations[5].ReservationId, MealId = meals[5].MealId},
-//			};
-
-//			db.ReservationLists.AddRange(reservationLists);
-//			db.SaveChanges();
-//		}
-//		catch (Exception ex)
-//		{
-//			Console.WriteLine("Exception caught: " + ex.Message);
-//		}
-//	}
+//    Console.WriteLine($"{rating.Name}\t\t\t\t{rating.AvgRating}");
+//}
 
 
 
 
 
-}
 
-void ClearData(MyDbContext db)
+void SeedDb()
 {
-	var ratings = db.Ratings.ToList();
-	var reservations = db.Reservations.ToList();
-	var meals = db.Meals.ToList();
-	var reservationLists = db.ReservationLists.ToList();
-	var customers = db.Customers.ToList();
-	var canteens = db.Canteens.ToList();
-	
-	
-	db.RemoveRange(db.Ratings);
-	db.RemoveRange(db.Reservations);
-	db.RemoveRange(db.Meals);
-	db.RemoveRange(db.ReservationLists);
-	db.RemoveRange(db.Customers);
-	db.RemoveRange(db.Canteens);
-	
 
-	db.SaveChanges();
-}
+
+    // Create Canteens
+    Console.WriteLine("Creating canteens");
+    var canteen1 = new Canteen
+    {
+        CanteenName = "Kgl. Bibliotek",
+        Address = "Nygade 6, Aarhus C",
+        ZipCode = 8000,
+        AVGRating = 4.9f,
+        Staff = new List<Staff>(),
+        Ratings = new List<Rating>(),
+        Meals = new List<Meal>()
+    };
+    canteens.Insert(canteen1);
+
+    var canteen2 = new Canteen
+    {
+        CanteenName = "Kemisk Canteen",
+        Address = "Nørregade 10, Aarhus N",
+        ZipCode = 8200,
+        AVGRating = 4.5f,
+        Staff = new List<Staff>(),
+        Ratings = new List<Rating>(),
+        Meals = new List<Meal>()
+    };
+    canteens.Insert(canteen2);
+
+    var canteen3 = new Canteen
+    {
+        CanteenName = "Matematisk Canteen",
+        Address = "Silkeborgvej 20, Aarhus V",
+        ZipCode = 8210,
+        AVGRating = 4.2f,
+        Staff = new List<Staff>(),
+        Ratings = new List<Rating>(),
+        Meals = new List<Meal>()
+    };
+    canteens.Insert(canteen3);
+
+    Console.WriteLine("Finished creating canteens");
+
+    // Create Staff
+    Console.WriteLine("Creating staff");
+    staffs.AddNewStaff("Jens B.", "Cook", "30700", canteen1);
+    staffs.AddNewStaff("Mette C.", "Waiter", "29000", canteen1);
+    staffs.AddNewStaff("Mads D.", "Waiter", "29000", canteen1);
+    staffs.AddNewStaff("Lucile E.", "Cook", "30700", canteen1);
+    Console.WriteLine("Finished creating staff");
+
+
+    // Create Customers
+    //List<Customer> customerList = new List<Customer>();
+    Console.WriteLine("Creating customers");
+    customers.AddNewCustomer("au030300","Søren Nielsen" , 4);
+    customers.AddNewCustomer("au040400","Karen Christensen" , 3);
+    customers.AddNewCustomer("au050500", "Peter Pedersen", 5);
+    customers.AddNewCustomer("au060600", "Marianne Jensen", 5);
+    customers.AddNewCustomer("au070700", "Jørgen Hansen", 2);
+    customers.AddNewCustomer("au080800", "Gitte Madsen", 3);
+    customers.AddNewCustomer("au090900", "Henrik Petersen", 4);
+    Console.WriteLine("Finished creating customers");
+
+    
+    // Create Meals
+    Console.WriteLine("Creating meals");
+    meals.AddNewMeal("Green Curry", MealType.WarmDish, canteen1.Id);
+    meals.AddNewMeal("Pizza", MealType.StreetFood, canteen1.Id);
+    meals.AddNewMeal("Meatball Sandwich", MealType.StreetFood, canteen2.Id);
+    meals.AddNewMeal("Soup", MealType.WarmDish, canteen1.Id);
+    meals.AddNewMeal("Tacos", MealType.WarmDish, canteen1.Id);
+    meals.AddNewMeal("Pizza", MealType.StreetFood, canteen2.Id);
+    meals.AddNewMeal("Indian Curry", MealType.WarmDish, canteen1.Id);
+    meals.AddNewMeal("Burger", MealType.StreetFood, canteen2.Id);
+    Console.WriteLine("Finished creating meals");
+
+
+    // Create Ratings
+    Console.WriteLine("Creating ratings");
+
+    var rating1 = new Rating
+    {
+        CustomerId = customers.FindCustomerByAuId("au030300").Id,
+        RatingValue = 4,
+        CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
+        Datetime = DateTime.Today.AddDays(-10)
+    };
+    
+
+    var rating2 = new Rating
+    {
+        CustomerId = customers.FindCustomerByAuId("au040400").Id,
+        RatingValue = 3,
+        CanteenId = canteens.FindCanteenByName("Kemisk Canteen").Id,
+        Datetime = DateTime.Today.AddDays(-9)
+    };
+    ratings.AddNewRating(rating2.CustomerId, rating2.RatingValue, rating2.CanteenId, rating2.Datetime);
+
+    var rating3 = new Rating
+    {
+        CustomerId = customers.FindCustomerByAuId("au050500").Id,
+        RatingValue = 5,
+        CanteenId = canteens.FindCanteenByName("Matematisk Canteen").Id,
+        Datetime = DateTime.Today.AddDays(-8)
+    };
+    ratings.AddNewRating(rating3.CustomerId, rating3.RatingValue, rating3.CanteenId, rating3.Datetime);
+
+    var rating4 = new Rating
+    {
+        CustomerId = customers.FindCustomerByAuId("au060600").Id,
+        RatingValue = 5,
+        CanteenId = canteens.FindCanteenByName("Matematisk Canteen").Id,
+        Datetime = DateTime.Today.AddDays(-7)
+    };
+    ratings.AddNewRating(rating4.CustomerId, rating4.RatingValue, rating4.CanteenId, rating4.Datetime);
+
+    var rating5 = new Rating
+    {
+        CustomerId = customers.FindCustomerByAuId("au070700").Id,
+        RatingValue = 2,
+        CanteenId = canteens.FindCanteenByName("Kemisk Canteen").Id,
+        Datetime = DateTime.Today.AddDays(-6)
+    };
+    ratings.AddNewRating(rating5.CustomerId, rating5.RatingValue, rating5.CanteenId, rating5.Datetime);
+
+    var rating6 = new Rating
+    {
+        CustomerId = customers.FindCustomerByAuId("au080800").Id,
+        RatingValue = 3,
+        CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
+        Datetime = DateTime.Today.AddDays(-5)
+    };
+    ratings.AddNewRating(rating6.CustomerId, rating6.RatingValue, rating6.CanteenId, rating6.Datetime);
+
+    var rating7 = new Rating
+    {
+        CustomerId = customers.FindCustomerByAuId("au090900").Id,
+        RatingValue = 4,
+        CanteenId = canteens.FindCanteenByName("Matematisk Canteen").Id,
+        Datetime = DateTime.Today.AddDays(-4)
+    };
+    ratings.AddNewRating(rating7.CustomerId, rating7.RatingValue, rating7.CanteenId, rating7.Datetime);
+
+    Console.WriteLine("Finished creating ratings");
+
+
+
+    // Create Reservations
+    Console.WriteLine("Creating reservations");
+
+    var reservation1 = new Reservation
+    {
+        Status = ReservationStatus.Cancelled ,
+        ReservationTime = DateTime.Today.AddDays(1),
+        CustomerId = customers.FindCustomerByAuId("au030300").Id,
+        CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
+        ReservationLists = new List<ReservationList>
+        {
+            new ReservationList
+            {
+                MealId = meals.FindMealsByName("Green Curry").FirstOrDefault().Id,
+
+            }
+        }
+    };
+
+    // Try to create the reservation
+    if (reservations.CreateReservation(reservation1))
+    {
+        Console.WriteLine("Reservation created successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Failed to create reservation.");
+    }
+
+    Console.WriteLine("Finished creating reservations");
+
+    var reservation2 = new Reservation
+    {
+        Status = ReservationStatus.Reserved,
+        ReservationTime = DateTime.Today.AddDays(1),
+        CustomerId = customers.FindCustomerByAuId("au040400").Id,
+        CanteenId = canteens.FindCanteenByName("Matematisk Canteen").Id,
+        ReservationLists = new List<ReservationList>
+        {
+            new ReservationList
+            {
+                MealId = meals.FindMealsByName("Green Curry").FirstOrDefault().Id,
+
+            }
+        }
+    };
+
+    // Try to create the reservation
+    if (reservations.CreateReservation(reservation2))
+    {
+        Console.WriteLine("Reservation created successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Failed to create reservation.");
+    }
+
+    Console.WriteLine("Finished creating reservations");
+
+
+    
+
+    // Create ReservationLists
+    Console.WriteLine("Creating reservation lists");
+
+    // Create Meals list
+    Console.WriteLine("Creating meals");
+    List<Meal> meals2 = new List<Meal>();
+    MealRepository mealRepository = new MealRepository();
+    meals2.AddRange(mealRepository.FindAll());
+    Console.WriteLine("Finished creating meals");
+
+    // Create ReservationLists
+    Console.WriteLine("Creating reservation lists");
+    var greenCurryMeal = meals.FindMealsByName("Green Curry").FirstOrDefault();
+    if (greenCurryMeal == null)
+    {
+        return;
+    }
+    var reservationList1 = new ReservationList
+    {
+        ReservationId = reservation1.Id,
+        MealId = greenCurryMeal.Id
+
+    };
+    reservationLists.Insert(reservationList1);
+
+    Console.WriteLine("Finished creating reservation lists");
+
+
+    Console.WriteLine("Seed data created successfully.");
+
+
+};
+
+
+
 

@@ -1,0 +1,34 @@
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
+namespace ConsoleApp.Models
+{
+    public class Meal
+    {
+        public ObjectId Id { get; set; }
+        [BsonElement("mealName")]
+        public string MealName { get; set; }
+        [BsonElement("type")]
+        public MealType Type { get; set; }
+        [BsonElement("canteenId")]
+        public ObjectId CanteenId { get; set; }
+        [BsonElement("reservationLists")]
+        public ICollection<ReservationList> ReservationLists { get; set; }
+    }
+
+    public enum MealType
+    {
+        [BsonRepresentation(BsonType.String)]
+        [BsonElement("warmDish")]
+        WarmDish,
+
+        [BsonRepresentation(BsonType.String)]
+        [BsonElement("streetFood")]
+        StreetFood
+    }
+}
+
+
+
