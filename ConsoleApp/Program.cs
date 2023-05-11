@@ -248,7 +248,8 @@ void SeedDb()
         Name = "Jens B.",
         Title = "Cook",
         Salary = "30700",
-        Canteen = canteen1
+        Canteen = canteen1,
+        CanteenId = canteen1.Id
     };
     staffs.Insert(staff1);
     canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff1);
@@ -258,7 +259,8 @@ void SeedDb()
         Name = "Mette C.",
         Title = "Waiter",
         Salary = "29000",
-        Canteen = canteen1
+        Canteen = canteen1,
+        CanteenId = canteen1.Id
     };
     staffs.Insert(staff2);
     canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff2);
@@ -268,7 +270,8 @@ void SeedDb()
         Name = "Mads D. ",
         Title = "Waiter",
         Salary = "29000",
-        Canteen = canteen1
+        Canteen = canteen1,
+        CanteenId = canteen1.Id
     };
     staffs.Insert(staff3);
     canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff3);
@@ -278,7 +281,8 @@ void SeedDb()
         Name = "Lucile E.",
         Title = "Cook",
         Salary = "30700",
-        Canteen = canteen1
+        Canteen = canteen1,
+        CanteenId = canteen1.Id
     };
     staffs.Insert(staff4);
     canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff4);
