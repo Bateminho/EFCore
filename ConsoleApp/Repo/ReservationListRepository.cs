@@ -15,14 +15,7 @@ namespace ConsoleApp.Repo
             return Insert(reservationList);
         }
 
-        //public string GetMealNameByMealId(ObjectId mealId)
-        //{
-        //    var mealRepository = new MealRepository();
-        //    var meal = mealRepository.FindOne(meal => meal.Id == mealId);
-        //    return meal != null ? meal.MealName : "";
-        //}
-
-
+        
 
         public IList<ReservationList> FindReservationListsByReservationId(ObjectId reservationId)
         {
@@ -43,6 +36,8 @@ namespace ConsoleApp.Repo
         {
             return RemoveReservationListById(reservationList.ReservationId);
         }
+
+
 
         public bool UpdateReservationList(ObjectId id, ReservationList reservationList)
         {

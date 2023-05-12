@@ -44,22 +44,18 @@ namespace ConsoleApp.Repo
             return result.DeletedCount > 0;
         }
 
-        public bool RemoveStaff(Staff staff)
-        {
-            var result = Collection.DeleteOne(Builders<Staff>.Filter.Eq(s => s.Id, staff.Id));
-            return result.DeletedCount > 0;
-        }
 
-        public bool UpdateStaff(Staff staff)
-        {
-            var filter = Builders<Staff>.Filter.Eq(s => s.Id, staff.Id);
-            var update = Builders<Staff>.Update
-                .Set(s => s.Name, staff.Name)
-                .Set(s => s.Title, staff.Title)
-                .Set(s => s.Salary, staff.Salary);
-            var result = Collection.UpdateOne(filter, update);
-            return result.ModifiedCount > 0;
-        }
+
+        //public bool UpdateStaff(Staff staff)
+        //{
+        //    var filter = Builders<Staff>.Filter.Eq(s => s.Id, staff.Id);
+        //    var update = Builders<Staff>.Update
+        //        .Set(s => s.Name, staff.Name)
+        //        .Set(s => s.Title, staff.Title)
+        //        .Set(s => s.Salary, staff.Salary);
+        //    var result = Collection.UpdateOne(filter, update);
+        //    return result.ModifiedCount > 0;
+        //}
         public void DeleteAll()
         {
             Collection.DeleteMany(_ => true);

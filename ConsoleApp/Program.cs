@@ -51,10 +51,12 @@ var customer = customers.FindCustomerByAuId("au030300");
 var reservationsForCustomer = reservations.GetReservationsByCustomerId(customer.Id).ToList();
 
 var mealsForCustomer = (from reservationList in reservationLists.GetAll()
-                        join reservation in reservationsForCustomer on reservationList.ReservationId equals reservation.Id
-                        join meal in meals.GetAll() on reservationList.MealId equals meal.Id
-                        join canteen2 in canteens.GetAll() on meal.CanteenId equals canteen2.Id
-                        select new { MealId = meal.Id, MealName = meal.MealName, CanteenName = canteen2.CanteenName }).ToList();
+    join reservation in reservations.GetAll() on reservationList.ReservationId equals reservation.Id
+    join meal in meals.GetAll() on reservationList.MealId equals meal.Id
+    join canteen2 in canteens.GetAll() on meal.CanteenId equals canteen2.Id
+    where reservation.CustomerId == customer.Id
+    select new { MealId = meal.Id, MealName = meal.MealName, CanteenName = canteen2.CanteenName }).ToList();
+
 
 foreach (var meal in mealsForCustomer)
 {
@@ -325,7 +327,7 @@ void SeedDb()
 
     var reservation1 = new Reservation
     {
-        ReservationStatus = "Cancelled" ,
+        ReservationStatus = "Reserved" ,
         ReservationTime = DateTime.Today.AddDays(1),
         CustomerId = customers.FindCustomerByAuId("au030300").Id,
         CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
