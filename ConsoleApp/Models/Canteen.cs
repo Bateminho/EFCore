@@ -21,6 +21,7 @@ namespace ConsoleApp.Models
         [BsonElement("canteenName")]
         public string CanteenName { get; set; }
 
+      
         // Navigation properties
         public ICollection<Staff> Staff { get; set; }
 

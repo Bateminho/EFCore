@@ -43,6 +43,39 @@ namespace ConsoleApp.Repo
             return Insert(rating);
         }
 
+
+
+
+        public IDictionary<string, float> GetAverageRatingValuesForAllCanteens()
+        {
+            var averageRatingValues = new Dictionary<string, float>();
+
+            var canteenRepo = new CanteenRepository();
+            var canteens = canteenRepo.GetAll();
+
+            foreach (var canteen in canteens)
+            {
+                var canteenId = canteen.Id;
+                var ratings = Collection.Find(r => r.CanteenId == canteenId).ToList();
+                var ratingValues = new List<float>();
+
+                foreach (var rating in ratings)
+                {
+                    ratingValues.Add(rating.RatingValue);
+                }
+
+                var averageRating = ratingValues.Average();
+                averageRatingValues[canteen.CanteenName] = averageRating;
+            }
+
+            return averageRatingValues;
+        }
+
+
+
+
+
+
         public IList<Rating> FindRatingsByCustomerId(ObjectId customerId)
         {
             return Find(rating => rating.CustomerId == customerId);

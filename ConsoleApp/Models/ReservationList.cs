@@ -7,6 +7,7 @@ namespace ConsoleApp.Models
     public class ReservationList
     {
         public ObjectId Id { get; set; }
+        
         [BsonElement("mealId")]
         public ObjectId MealId { get; set; }
 

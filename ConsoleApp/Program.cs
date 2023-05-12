@@ -18,7 +18,7 @@ StaffRepository staffs = new StaffRepository();
 //if (canteens.GetAll().Any() || customers.GetAll().Any() || meals.GetAll().Any() ||
 //    reservations.GetAll().Any() || reservationLists.GetAll().Any() || staffs.GetAll().Any())
 {
-    // Delete existing data
+    //Delete existing data
     canteens.DeleteAll();
     customers.DeleteAll();
     meals.DeleteAll();
@@ -107,88 +107,32 @@ foreach (var mealType in mealTypes)
 
 //// Query 5 or a canteen given as input, show the the available (canceled) -------------------------------------------------------------------
 
-//Console.WriteLine("\n\n--------------------------------------------");
-//Console.WriteLine("Query 5: Show the available (cancelled) meals for nearby canteens\n");
+Console.WriteLine("\n\n--------------------------------------------");
+Console.WriteLine("Query 5: Show the available (cancelled) meals for nearby canteens\n");
+var reservationRepo = new ReservationRepository();
+reservationRepo.PrintCancelledReservationsFromOtherCanteens("Kgl. Bibliotek");
 
-//string inputCanteenName = "Kgl. Bibliotek"; // replace with actual input canteen name
 
-//var canteenQ5 = canteens.GetAll().FirstOrDefault(c => c.CanteenName == inputCanteenName);
-//if (canteenQ5 == null)
-//{
-//    Console.WriteLine($"Canteen {inputCanteenName} not found");
-//    return;
-//}
-
-//// find nearby canteens based on the zip code of the input canteen
-//var nearbyCanteens = canteens.GetAllExcept(inputCanteenName).Where(c => c.ZipCode == canteenQ5.ZipCode).ToList();
-//if (nearbyCanteens.Count == 0)
-//{
-//    Console.WriteLine($"No nearby canteens found for {inputCanteenName}");
-//    return;
-//}
-
-//// find all cancelled reservations and include the meals and canteens
-//var cancelledReservations = reservations.GetAllCancelledReservations()
-//    .AsQueryable()
-//    .Include(r => r.ReservationLists)
-//    .ThenInclude(rl => rl.Meal)
-//    .ThenInclude(m => m.Canteen)
-//    .ToList();
-
-//// display the cancelled meals available at nearby canteens
-//Console.WriteLine($"Cancelled meals available at nearby canteens from {inputCanteenName}:");
-//foreach (var reservation in cancelledReservations)
-//{
-//    foreach (var reservationList in reservation.ReservationLists)
-//    {
-//        var meal = reservationList.Meal;
-//        var canteenNameQ6 = meal.Canteen.CanteenName;
-//        var isNearbyCanteen = nearbyCanteens.Any(c => c.CanteenName == canteenNameQ6);
-//        if (isNearbyCanteen && canteenNameQ6 != inputCanteenName)
-//        {
-//            Console.WriteLine($"Canteen Name: {canteenNameQ5}, " +
-//                              $"Zip Code: {meal.Canteen.ZipCode}, " +
-//                              $"Meal Name: {meal.MealName}");
-//        }
-//    }
-//}
-
-////Query 6 -----------------------------------------------------------------------------------------------------------------------
+//Query 6 -----------------------------------------------------------------------------------------------------------------------
 Console.WriteLine("\n\n--------------------------------------------");
 Console.WriteLine("Query 6: Show average rating of all canteens\n");
 
-var canteenRepo = new CanteenRepository();
+var ratingRepo = new RatingRepository(canteens);
+var averageRatings = ratingRepo.GetAverageRatingValuesForAllCanteens();
 
-var canteenNames = canteenRepo.GetAllCanteenNames();
-var canteenAvgRatings = canteenRepo.GetCanteensAverageRatings();
-
-foreach (var name in canteenNames)
+foreach (var rating in averageRatings)
 {
-    Console.WriteLine($"{name}: {canteenAvgRatings[name]:F2}");
+    Console.WriteLine($"{rating.Key}: {rating.Value}");
 }
 
+
+//// Query 7: Get the payroll of all staff working in a canteen by canteen name
 Console.WriteLine("\n\n--------------------------------------------");
 Console.WriteLine("Query 7: Show payroll for staff\n");
 
-Canteen canteenQ7 = canteens.FindCanteenByName("Kgl. Bibliotek");
-
-// Query 7: Get the payroll of all staff working in a canteen by canteen name
-var canteenNameQ7 = "Kgl. Bibliotek";
-var payroll = canteens.GetStaffPayrollByCanteenName(canteenNameQ7);
-
-if (payroll.Any())
-{
-    Console.WriteLine($"\nPayroll of staff working in {canteenNameQ7}:");
-    Console.WriteLine("-------------------------------------");
-    foreach (var (staffName, salary) in payroll)
-    {
-        Console.WriteLine($"{staffName}: {salary}");
-    }
-}
-else
-{
-    Console.WriteLine($"No staff found working in {canteenNameQ7}.");
-}
+CanteenRepository repo = new CanteenRepository();
+repo.PrintStaffInformation("Kgl. Bibliotek");
+ 
 
 
 
@@ -204,10 +148,40 @@ void SeedDb()
         Address = "Nygade 6, Aarhus C",
         ZipCode = 8000,
         AVGRating = 4.9f,
-        Staff = new List<Staff>(),
-        Ratings = new List<Rating>(),
-        Meals = new List<Meal>()
+        Staff = new Staff[]
+        {
+            new Staff
+            {
+                Id = ObjectId.GenerateNewId(),
+                Name = "Jens B.",
+                Title = "Cook",
+                Salary = "30700"
+            },
+            new Staff
+            {
+                Id = ObjectId.GenerateNewId(),
+                Name = "Mette C.",
+                Title = "Waiter",
+                Salary = "29000"
+            },
+            new Staff
+            {
+                Id = ObjectId.GenerateNewId(),
+                Name = "Mads D.",
+                Title = "Waiter",
+                Salary = "29000"
+            },
+            new Staff
+            {
+                Id = ObjectId.GenerateNewId(),
+                Name = "Lucile E.",
+                Title = "Cook",
+                Salary = "30700"
+            }
+        }
+        
     };
+    
     canteens.Insert(canteen1);
 
     var canteen2 = new Canteen
@@ -216,74 +190,30 @@ void SeedDb()
         Address = "Nørregade 10, Aarhus N",
         ZipCode = 8200,
         AVGRating = 4.5f,
-        Staff = new List<Staff>(),
-        Ratings = new List<Rating>(),
-        Meals = new List<Meal>()
+        Staff = new Staff[]
+        {
+            new Staff
+            {
+                Name = "John Smith",
+                Title = "Chef",
+                Salary = "40000"
+            }
+        }
     };
     canteens.Insert(canteen2);
 
-    var canteen3 = new Canteen
+    var canteen3 = new Canteen()
     {
         CanteenName = "Matematisk Canteen",
         Address = "Silkeborgvej 20, Aarhus V",
         ZipCode = 8210,
         AVGRating = 4.2f,
-        Staff = new List<Staff>(),
-        Ratings = new List<Rating>(),
-        Meals = new List<Meal>()
     };
+
     canteens.Insert(canteen3);
 
-    Console.WriteLine("Finished creating canteens");
 
-    // Create Staff
-    Console.WriteLine("Creating staff");
-    
-    var staff1 = new Staff
-    {
-        Name = "Jens B.",
-        Title = "Cook",
-        Salary = "30700",
-        Canteen = canteen1,
-        CanteenId = canteen1.Id
-    };
-    staffs.Insert(staff1);
-    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff1);
-
-    var staff2 = new Staff
-    {
-        Name = "Mette C.",
-        Title = "Waiter",
-        Salary = "29000",
-        Canteen = canteen1,
-        CanteenId = canteen1.Id
-    };
-    staffs.Insert(staff2);
-    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff2);
-
-    var staff3 = new Staff
-    {
-        Name = "Mads D. ",
-        Title = "Waiter",
-        Salary = "29000",
-        Canteen = canteen1,
-        CanteenId = canteen1.Id
-    };
-    staffs.Insert(staff3);
-    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff3);
-
-    var staff4 = new Staff
-    {
-        Name = "Lucile E.",
-        Title = "Cook",
-        Salary = "30700",
-        Canteen = canteen1,
-        CanteenId = canteen1.Id
-    };
-    staffs.Insert(staff4);
-    canteens.AddStaffToCanteen(canteen1.Id.ToString(), staff4);
-
-    Console.WriteLine("Finished creating staff");
+    Console.WriteLine("Finished creating canteens and staff");
 
 
 
@@ -302,14 +232,14 @@ void SeedDb()
     
     // Create Meals
     Console.WriteLine("Creating meals");
-    meals.AddNewMeal("Green Curry", MealType.WarmDish, canteen1.Id);
-    meals.AddNewMeal("Pizza", MealType.StreetFood, canteen1.Id);
-    meals.AddNewMeal("Meatball Sandwich", MealType.StreetFood, canteen2.Id);
-    meals.AddNewMeal("Soup", MealType.WarmDish, canteen1.Id);
-    meals.AddNewMeal("Tacos", MealType.WarmDish, canteen1.Id);
-    meals.AddNewMeal("Pizza", MealType.StreetFood, canteen2.Id);
-    meals.AddNewMeal("Indian Curry", MealType.WarmDish, canteen1.Id);
-    meals.AddNewMeal("Burger", MealType.StreetFood, canteen3.Id);
+    meals.AddNewMeal("Green Curry", "WarmDish", canteen1.Id);
+    meals.AddNewMeal("Pizza", "StreetFood", canteen1.Id);
+    meals.AddNewMeal("Meatball Sandwich", "StreetFood", canteen2.Id);
+    meals.AddNewMeal("Soup", "WarmDish", canteen1.Id);
+    meals.AddNewMeal("Tacos", "WarmDish", canteen1.Id);
+    meals.AddNewMeal("Pizza", "StreetFood", canteen2.Id);
+    meals.AddNewMeal("Indian Curry", "WarmDish", canteen1.Id);
+    meals.AddNewMeal("Burger", "StreetFood", canteen3.Id);
     Console.WriteLine("Finished creating meals");
 
 
@@ -323,7 +253,8 @@ void SeedDb()
         CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
         Datetime = DateTime.Today.AddDays(-10)
     };
-    
+    ratings.AddNewRating(rating1.CustomerId, rating1.RatingValue, rating1.CanteenId, rating1.Datetime);
+    canteens.AddRatingToCanteen(rating1.CanteenId, rating1.RatingValue);
 
     var rating2 = new Rating
     {
@@ -333,6 +264,7 @@ void SeedDb()
         Datetime = DateTime.Today.AddDays(-9)
     };
     ratings.AddNewRating(rating2.CustomerId, rating2.RatingValue, rating2.CanteenId, rating2.Datetime);
+    canteens.AddRatingToCanteen(rating2.CanteenId, rating2.RatingValue);
 
     var rating3 = new Rating
     {
@@ -342,6 +274,7 @@ void SeedDb()
         Datetime = DateTime.Today.AddDays(-8)
     };
     ratings.AddNewRating(rating3.CustomerId, rating3.RatingValue, rating3.CanteenId, rating3.Datetime);
+    canteens.AddRatingToCanteen(rating3.CanteenId, rating3.RatingValue);
 
     var rating4 = new Rating
     {
@@ -351,6 +284,7 @@ void SeedDb()
         Datetime = DateTime.Today.AddDays(-7)
     };
     ratings.AddNewRating(rating4.CustomerId, rating4.RatingValue, rating4.CanteenId, rating4.Datetime);
+    canteens.AddRatingToCanteen(rating4.CanteenId, rating4.RatingValue);
 
     var rating5 = new Rating
     {
@@ -360,6 +294,7 @@ void SeedDb()
         Datetime = DateTime.Today.AddDays(-6)
     };
     ratings.AddNewRating(rating5.CustomerId, rating5.RatingValue, rating5.CanteenId, rating5.Datetime);
+    canteens.AddRatingToCanteen(rating5.CanteenId, rating5.RatingValue);
 
     var rating6 = new Rating
     {
@@ -369,6 +304,7 @@ void SeedDb()
         Datetime = DateTime.Today.AddDays(-5)
     };
     ratings.AddNewRating(rating6.CustomerId, rating6.RatingValue, rating6.CanteenId, rating6.Datetime);
+    canteens.AddRatingToCanteen(rating6.CanteenId, rating6.RatingValue);
 
     var rating7 = new Rating
     {
@@ -378,6 +314,7 @@ void SeedDb()
         Datetime = DateTime.Today.AddDays(-4)
     };
     ratings.AddNewRating(rating7.CustomerId, rating7.RatingValue, rating7.CanteenId, rating7.Datetime);
+    canteens.AddRatingToCanteen(rating7.CanteenId, rating7.RatingValue);
 
     Console.WriteLine("Finished creating ratings");
 
@@ -388,7 +325,7 @@ void SeedDb()
 
     var reservation1 = new Reservation
     {
-        Status = ReservationStatus.Cancelled ,
+        ReservationStatus = "Cancelled" ,
         ReservationTime = DateTime.Today.AddDays(1),
         CustomerId = customers.FindCustomerByAuId("au030300").Id,
         CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
@@ -402,21 +339,11 @@ void SeedDb()
         }
     };
 
-    // Try to create the reservation
-    if (reservations.CreateReservation(reservation1))
-    {
-        Console.WriteLine("Reservation created successfully.");
-    }
-    else
-    {
-        Console.WriteLine("Failed to create reservation.");
-    }
-
     Console.WriteLine("Finished creating reservations");
 
     var reservation2 = new Reservation
     {
-        Status = ReservationStatus.Reserved,
+        ReservationStatus = "Cancelled",
         ReservationTime = DateTime.Today.AddDays(1),
         CustomerId = customers.FindCustomerByAuId("au040400").Id,
         CanteenId = canteens.FindCanteenByName("Matematisk Canteen").Id,
@@ -424,7 +351,7 @@ void SeedDb()
         {
             new ReservationList
             {
-                MealId = meals.FindMealsByName("Green Curry").FirstOrDefault().Id,
+                MealId = meals.FindMealsByName("Pizza").FirstOrDefault().Id,
 
             }
         }

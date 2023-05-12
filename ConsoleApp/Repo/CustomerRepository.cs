@@ -9,20 +9,20 @@ namespace ConsoleApp.Repo
 {
     public class CustomerRepository : Repository<Customer>
     {
-        public bool AddNewCustomer(string customerAuId, string name, int rating)
+        public bool AddNewCustomer(string customerAuId, string name, float rating = 4.5f)
         {
             Customer customer = new Customer
             {
                 Id = ObjectId.GenerateNewId(),
                 CustomerAuId = customerAuId,
                 Name = name,
-                Rating = rating
+                Rating = rating 
             };
 
             return Insert(customer);
         }
 
-        public bool UpdateCustomerRating(string customerAuId, int newRating)
+        public bool UpdateCustomerRating(string customerAuId, float newRating)
         {
             Customer customer = FindCustomerByAuId(customerAuId);
             if (customer != null)
@@ -33,7 +33,16 @@ namespace ConsoleApp.Repo
             return false;
         }
 
-        
+        //public bool AddRatingToCustomer(ObjectId customerId, int ratingValue)
+        //{
+        //    var filter = Builders<Customer>.Filter.Eq(c => c.Id, customerId);
+        //    var update = Builders<Customer>.Update.Push(c => c.Ratings, new Rating { RatingValue = ratingValue });
+        //    var result = collection.UpdateOne(filter, update);
+
+        //    return result.ModifiedCount > 0;
+        //}
+
+
 
         public Customer? FindCustomerByAuId(string customerAuId)
         {

@@ -29,10 +29,39 @@ namespace ConsoleApp.Repo
             return Collection.Find(r => r.CanteenId == canteenId).ToList();
         }
 
-        public IQueryable<Reservation> GetAllCancelledReservations()
+        public void PrintCancelledReservationsFromOtherCanteens(string canteenName)
         {
-            return Collection.AsQueryable().Where(r => r.Status == ReservationStatus.Cancelled);
+            var canteenRepo = new CanteenRepository();
+            var canteen = canteenRepo.Find(c => c.CanteenName == canteenName).FirstOrDefault();
+
+            if (canteen != null)
+            {
+                var mealRepo = new MealRepository();
+                var cancelledReservations = Collection
+                    .Find(r => r.ReservationStatus == "Cancelled" && r.CanteenId != canteen.Id)
+                    .ToList();
+
+                foreach (var reservation in cancelledReservations)
+                {
+                    var canteenWhereCancelled = canteenRepo.Find(c => c.Id == reservation.CanteenId).FirstOrDefault();
+                    if (canteenWhereCancelled != null)
+                    {
+                        Console.WriteLine($"Canteen Name: {canteenWhereCancelled.CanteenName}");
+                        foreach (var reservationList in reservation.ReservationLists)
+                        {
+                            var meal = mealRepo.Find(m => m.Id == reservationList.MealId).FirstOrDefault();
+                            if (meal != null)
+                            {
+                                Console.WriteLine($"Meal Name: {meal.MealName}");
+                            }
+                        }
+                        Console.WriteLine($"Zipcode: {canteenWhereCancelled.ZipCode}");
+                    }
+                }
+            }
         }
+
+
 
 
         public bool UpdateReservation(Reservation reservation)

@@ -9,6 +9,8 @@ namespace ConsoleApp.Repo
 {
     public class CanteenRepository : Repository<Canteen>
     {
+        public IMongoCollection<Canteen> CanteenCollection => Collection;
+
         public bool NewCanteen(string name, int zipCode, string address, float avgRating)
         {
             // Check if a canteen with the same name already exists
@@ -50,21 +52,41 @@ namespace ConsoleApp.Repo
                 .ToList();
         }
 
-        public IDictionary<string, float> GetCanteensAverageRatings()
-        {
-            var canteens = GetAll();
-            var averageRatings = new Dictionary<string, float>();
+        
 
-            foreach (var canteen in canteens)
+        public bool AddRatingToCanteen(ObjectId canteenId, float ratingValue)
+        {
+            var canteenRepo = new Repository<Canteen>();
+            var ratingRepo = new Repository<Rating>();
+
+            var canteen = canteenRepo.Find(x => x.Id == canteenId).FirstOrDefault();
+            if (canteen == null)
             {
-                averageRatings.Add(canteen.CanteenName, canteen.GetAverageRating());
+                return false;
             }
 
-            return averageRatings;
+            var rating = new Rating
+            {
+                CanteenId = canteenId,
+                RatingValue = ratingValue,
+                Datetime = DateTime.Now
+            };
+            ratingRepo.Insert(rating);
+
+            var ratings = ratingRepo.Find(x => x.CanteenId == canteenId);
+            var averageRating = ratings.Average(x => x.RatingValue);
+
+            canteen.AVGRating = averageRating;
+            canteenRepo.Insert(canteen);
+
+            return true;
         }
 
 
-
+        private void Update(Canteen canteen)
+        {
+            throw new NotImplementedException();
+        }
 
         public bool RemoveCanteenById(string id)
         {
@@ -96,43 +118,25 @@ namespace ConsoleApp.Repo
             return result.ModifiedCount > 0;
         }
 
-        public IDictionary<string, string> GetStaffPayrollByCanteenName(string canteenName)
+        public void PrintStaffInformation(string canteenName)
         {
-            var lookup = new BsonDocument("$lookup",
-                new BsonDocument
-                {
-                    { "from", "Staff" },
-                    { "localField", "Staff._id" },
-                    { "foreignField", "_id" },
-                    { "as", "Staff" }
-                });
+            var canteen = FindCanteenByName(canteenName);
 
-            var unwind = new BsonDocument("$unwind", "$Staff");
-
-            var match = new BsonDocument("$match", new BsonDocument("CanteenName", canteenName));
-
-            var project = new BsonDocument("$project",
-                new BsonDocument
-                {
-                    { "_id", "$Staff._id" },
-                    { "Name", "$Staff.Name" },
-                    { "Title", "$Staff.Title" },
-                    { "Salary", "$Staff.Salary" }
-                });
-
-            var pipeline = new[] { lookup, unwind, match, project };
-
-            var result = Collection.Aggregate<BsonDocument>(pipeline).ToList();
-
-            var payroll = new Dictionary<string, string>();
-
-            foreach (var document in result)
+            if (canteen == null)
             {
-                payroll.Add(document["Name"].ToString(), document["Salary"].ToString());
+                Console.WriteLine($"No canteen found with the name '{canteenName}'");
+                return;
             }
 
-            return payroll;
+            foreach (var staff in canteen.Staff)
+            {
+                Console.WriteLine($"Staff Id: {staff.Id}");
+                Console.WriteLine($"Staff Name: {staff.Name}");
+                Console.WriteLine($"Staff Title: {staff.Title}");
+                Console.WriteLine($"Staff Salary: {staff.Salary}");
+            }
         }
+
 
 
         public void DeleteAll()

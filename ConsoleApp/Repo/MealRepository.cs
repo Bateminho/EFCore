@@ -9,7 +9,7 @@ namespace ConsoleApp.Repo
 {
     public class MealRepository : Repository<Meal>
     {
-        public bool AddNewMeal(string mealName, MealType type, ObjectId canteenId)
+        public bool AddNewMeal(string mealName, string type, ObjectId canteenId)
         {
             Meal meal = new Meal { MealName = mealName, Type = type, CanteenId = canteenId };
             return Insert(meal);
@@ -20,7 +20,7 @@ namespace ConsoleApp.Repo
             return Collection.Find(m => m.Id == mealId).FirstOrDefault();
         }
 
-        public IList<Meal> FindMealsByType(MealType type)
+        public IList<Meal> FindMealsByType(string type)
         {
             return Collection.Find(m => m.Type == type).ToList();
         }

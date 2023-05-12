@@ -11,23 +11,24 @@ namespace ConsoleApp.Models
         [BsonElement("mealName")]
         public string MealName { get; set; }
         [BsonElement("type")]
-        public MealType Type { get; set; }
+        public string Type { get; set; }
+        //public MealType Type { get; set; }
         [BsonElement("canteenId")]
         public ObjectId CanteenId { get; set; }
         [BsonElement("reservationLists")]
         public ICollection<ReservationList> ReservationLists { get; set; }
     }
 
-    public enum MealType
-    {
-        [BsonRepresentation(BsonType.String)]
-        [BsonElement("warmDish")]
-        WarmDish,
+    //public enum MealType
+    //{
+    //    [BsonRepresentation(BsonType.String)]
+    //    [BsonElement("warmDish")]
+    //    WarmDish,
 
-        [BsonRepresentation(BsonType.String)]
-        [BsonElement("streetFood")]
-        StreetFood
-    }
+    //    [BsonRepresentation(BsonType.String)]
+    //    [BsonElement("streetFood")]
+    //    StreetFood
+    //}
 }
 
 

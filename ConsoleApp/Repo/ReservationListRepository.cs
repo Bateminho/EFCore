@@ -15,6 +15,15 @@ namespace ConsoleApp.Repo
             return Insert(reservationList);
         }
 
+        //public string GetMealNameByMealId(ObjectId mealId)
+        //{
+        //    var mealRepository = new MealRepository();
+        //    var meal = mealRepository.FindOne(meal => meal.Id == mealId);
+        //    return meal != null ? meal.MealName : "";
+        //}
+
+
+
         public IList<ReservationList> FindReservationListsByReservationId(ObjectId reservationId)
         {
             return Find(reservationList => reservationList.ReservationId == reservationId);

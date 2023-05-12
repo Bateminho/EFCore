@@ -18,7 +18,7 @@ namespace ConsoleApp.Models
         [BsonElement("name")]
         public string Name { get; set; }
         [BsonElement("rating")]
-        public int Rating { get; set; }
+        public float Rating { get; set; }
         [BsonElement("ratings")]
         public ICollection<Rating> Ratings { get; set; }
         [BsonElement("reservations")]

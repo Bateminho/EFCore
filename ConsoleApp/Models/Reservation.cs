@@ -10,7 +10,7 @@ namespace ConsoleApp.Models
     {
         public ObjectId Id { get; set; }
         [BsonElement("status")]
-        public ReservationStatus Status { get; set; }
+        public string ReservationStatus { get; set; }
         [BsonElement("reservationTime")]
         public DateTime ReservationTime { get; set; }
         [BsonElement("customerId")]
@@ -21,13 +21,5 @@ namespace ConsoleApp.Models
         public ICollection<ReservationList> ReservationLists { get; set; }
     }
 
-    public enum ReservationStatus
-    {
-        [BsonRepresentation(BsonType.String)]
-        [Display(Name = "Reserved")]
-        Reserved,
-        [BsonRepresentation(BsonType.String)]
-        [Display(Name = "Cancelled")]
-        Cancelled
-    }
+    
 }
