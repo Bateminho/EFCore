@@ -19,16 +19,7 @@ namespace ConsoleApp.Models
         public ICollection<ReservationList> ReservationLists { get; set; }
     }
 
-    //public enum MealType
-    //{
-    //    [BsonRepresentation(BsonType.String)]
-    //    [BsonElement("warmDish")]
-    //    WarmDish,
-
-    //    [BsonRepresentation(BsonType.String)]
-    //    [BsonElement("streetFood")]
-    //    StreetFood
-    //}
+    
 }
 
 

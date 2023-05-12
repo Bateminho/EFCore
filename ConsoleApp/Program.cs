@@ -238,8 +238,8 @@ void SeedDb()
     meals.AddNewMeal("Pizza", "StreetFood", canteen1.Id);
     meals.AddNewMeal("Meatball Sandwich", "StreetFood", canteen2.Id);
     meals.AddNewMeal("Soup", "WarmDish", canteen1.Id);
-    meals.AddNewMeal("Tacos", "WarmDish", canteen1.Id);
-    meals.AddNewMeal("Pizza", "StreetFood", canteen2.Id);
+    meals.AddNewMeal("Red Curry", "WarmDish", canteen1.Id);
+    meals.AddNewMeal("Pita m. Tun", "StreetFood", canteen2.Id);
     meals.AddNewMeal("Indian Curry", "WarmDish", canteen1.Id);
     meals.AddNewMeal("Burger", "StreetFood", canteen3.Id);
     Console.WriteLine("Finished creating meals");
@@ -327,7 +327,7 @@ void SeedDb()
 
     var reservation1 = new Reservation
     {
-        ReservationStatus = "Reserved" ,
+        ReservationStatus = "Reserved",
         ReservationTime = DateTime.Today.AddDays(1),
         CustomerId = customers.FindCustomerByAuId("au030300").Id,
         CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
@@ -341,7 +341,17 @@ void SeedDb()
         }
     };
 
-    Console.WriteLine("Finished creating reservations");
+    // Try to create the reservation
+    if (reservations.CreateReservation(reservation1))
+    {
+        Console.WriteLine("Reservation created successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Failed to create reservation.");
+    }
+
+    
 
     var reservation2 = new Reservation
     {
@@ -400,9 +410,178 @@ void SeedDb()
     reservationLists.Insert(reservationList1);
 
     Console.WriteLine("Finished creating reservation lists");
+    //--------------------------------------------------------------------------------------------------------------
+    // Create Reservations
+    Console.WriteLine("Creating reservations");
+
+    var reservation3 = new Reservation
+    {
+        ReservationStatus = "Reserved",
+        ReservationTime = DateTime.Today.AddDays(1),
+        CustomerId = customers.FindCustomerByAuId("au060600").Id,
+        CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
+        ReservationLists = new List<ReservationList>
+        {
+            new ReservationList
+            {
+                MealId = meals.FindMealsByName("Red Curry").FirstOrDefault().Id,
+
+            }
+        }
+    };
+
+    // Try to create the reservation
+    if (reservations.CreateReservation(reservation3))
+    {
+        Console.WriteLine("Reservation created successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Failed to create reservation.");
+    }
 
 
+
+    var reservation4 = new Reservation
+    {
+        ReservationStatus = "Cancelled",
+        ReservationTime = DateTime.Today.AddDays(1),
+        CustomerId = customers.FindCustomerByAuId("au030300").Id,
+        CanteenId = canteens.FindCanteenByName("Matematisk Canteen").Id,
+        ReservationLists = new List<ReservationList>
+        {
+            new ReservationList
+            {
+                MealId = meals.FindMealsByName("Pizza").FirstOrDefault().Id,
+
+            }
+        }
+    };
+
+    // Try to create the reservation
+    if (reservations.CreateReservation(reservation4))
+    {
+        Console.WriteLine("Reservation created successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Failed to create reservation.");
+    }
+
+    Console.WriteLine("Finished creating reservations");
+
+
+
+
+    // Create ReservationLists
+    Console.WriteLine("Creating reservation lists");
+
+    // Create Meals list
+    Console.WriteLine("Creating meals");
+    List<Meal> meals5 = new List<Meal>();
+    MealRepository mealRepository2 = new MealRepository();
+    meals2.AddRange(mealRepository2.FindAll());
+    Console.WriteLine("Finished creating meals");
+
+    // Create ReservationLists
+    Console.WriteLine("Creating reservation lists");
+    var redCurryMeal = meals.FindMealsByName("Red Curry").FirstOrDefault();
+    if (redCurryMeal == null)
+    {
+        return;
+    }
+    var reservationList2 = new ReservationList
+    {
+        ReservationId = reservation2.Id,
+        MealId = redCurryMeal.Id
+
+    };
+    reservationLists.Insert(reservationList2);
+
+    Console.WriteLine("Finished creating reservation lists");
+
+   
+    var reservation5 = new Reservation
+    {
+        ReservationStatus = "Reserved",
+        ReservationTime = DateTime.Today.AddDays(1),
+        CustomerId = customers.FindCustomerByAuId("au030300").Id,
+        CanteenId = canteens.FindCanteenByName("Kgl. Bibliotek").Id,
+        ReservationLists = new List<ReservationList>
+        {
+            new ReservationList
+            {
+                MealId = meals.FindMealsByName("Burger").FirstOrDefault().Id,
+
+            }
+        }
+    };
+
+    // Try to create the reservation
+    if (reservations.CreateReservation(reservation5))
+    {
+        Console.WriteLine("Reservation created successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Failed to create reservation.");
+    }
+
+
+    var reservation6 = new Reservation
+    {
+        ReservationStatus = "Cancelled",
+        ReservationTime = DateTime.Today.AddDays(1),
+        CustomerId = customers.FindCustomerByAuId("au060600").Id,
+        CanteenId = canteens.FindCanteenByName("Matematisk Canteen").Id,
+        ReservationLists = new List<ReservationList>
+        {
+            new ReservationList
+            {
+                MealId = meals.FindMealsByName("Pizza").FirstOrDefault().Id,
+
+            }
+        }
+    };
+
+    // Try to create the reservation
+    if (reservations.CreateReservation(reservation6))
+    {
+        Console.WriteLine("Reservation created successfully.");
+    }
+    else
+    {
+        Console.WriteLine("Failed to create reservation.");
+    }
+
+    
+    List<Meal> meals7 = new List<Meal>();
+    MealRepository mealRepository3 = new MealRepository();
+    meals5.AddRange(mealRepository3.FindAll());
+    Console.WriteLine("Finished creating meals");
+
+    // Create ReservationLists
+   
+    var pitabread = meals.FindMealsByName("Pita m. Tun").FirstOrDefault();
+    if (pitabread == null)
+    {
+        return;
+    }
+    var reservationList5 = new ReservationList
+    {
+        ReservationId = reservation5.Id,
+        MealId = pitabread.Id
+
+    };
+    reservationLists.Insert(reservationList5);
+
+    Console.WriteLine("Finished creating reservation lists");
+
+
+
+    //--------------------------------------------------------------------------------------------------------------
     Console.WriteLine("Seed data created successfully.");
+
 
 
 };
